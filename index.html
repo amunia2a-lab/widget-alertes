@@ -3,182 +3,125 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Alertes Atelier</title>
-
+<title>Alertes atelier</title>
 <style>
-*{box-sizing:border-box}
-
-body{
-  font-family: Inter, system-ui, sans-serif;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  min-height:100vh;
-  margin:0;
-  background:transparent;
-}
-
-.widget{
-  width:680px;
-  max-width:100%;
-  padding:18px;
-  border-radius:20px;
-  border:1px solid rgba(0,0,0,0.08);
-  background:white;
-}
-
-.header{
-  display:flex;
-  justify-content:space-between;
-  margin-bottom:14px;
-  font-weight:600;
-}
-
-.card{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  padding:12px;
-  border:1px solid rgba(0,0,0,0.08);
-  border-radius:14px;
-  margin-bottom:10px;
-}
-
-.left{
-  display:flex;
-  gap:10px;
-  align-items:center;
-}
-
-.dot{
-  width:10px;
-  height:10px;
-  border-radius:50%;
-}
-
-.red{background:#e5484d;}
-.orange{background:#f5a524;}
-.green{background:#30a46c;}
-
-.title{font-weight:600;}
-.sub{font-size:12px;color:#666;}
-
-button{
-  border:1px solid rgba(0,0,0,0.1);
-  background:white;
-  padding:6px 12px;
-  border-radius:8px;
-  cursor:pointer;
-}
-
-.form{
-  display:flex;
-  gap:10px;
-  margin-top:12px;
-}
-
-.form input{
-  flex:1;
-  min-width:0;
-}
-
-.form select{
-  width:150px;
-}
-
-.form button{
-  width:100px;
-}
-
-input,select{
-  padding:8px 10px;
-  border-radius:8px;
-  border:1px solid rgba(0,0,0,0.1);
-  background:white;
-  font-size:13px;
-}
-
-.small{
-  font-size:12px;
-  color:#777;
-  margin-top:8px;
-  text-align:center;
-}
+body{font-family:Inter,system-ui;margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:transparent}
+.widget{width:760px;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:24px;padding:20px}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.title{font-size:26px;font-weight:700;display:flex;gap:10px;align-items:center}
+.counters{display:flex;gap:18px;font-weight:700}
+.counter{display:flex;gap:6px;align-items:center}
+.circle{width:14px;height:14px;border-radius:50%;background:#e5484d}
+.triangle{width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:14px solid #f5a524}
+.square{width:14px;height:14px;background:#30a46c;border-radius:3px}
+.panel{border:1px solid rgba(0,0,0,.08);border-radius:18px;margin-bottom:16px}
+.row{display:flex;justify-content:space-between;padding:14px;border-bottom:1px solid rgba(0,0,0,.06)}
+.row:last-child{border-bottom:none}
+.badge{padding:6px 12px;border-radius:999px;color:#fff;font-weight:700;margin-right:10px}
+.urgent{background:#e5484d}
+.important{background:#f5a524}
+.normal{background:#30a46c}
+.form{display:flex;gap:10px;margin-bottom:12px}
+.form input,.form select{height:48px;border:1px solid rgba(0,0,0,.1);border-radius:12px;padding:0 14px;font-size:16px}
+.form input{flex:1}
+.form select{width:160px}
+button{height:48px;border-radius:12px;border:none;background:#2f6fc7;color:#fff;font-weight:700;padding:0 18px;cursor:pointer}
+.footer{text-align:center;color:#666;font-size:14px}
 </style>
 </head>
-
 <body>
 
 <div class="widget">
 
 <div class="header">
-<div>⚠️ Alertes atelier</div>
-<div id="count">0</div>
+<div class="title">⚠️ Alertes atelier</div>
+<div class="counters">
+<div class="counter"><div class="circle"></div><span id="urgentCount">0</span></div>
+<div class="counter"><div class="triangle"></div><span id="importantCount">0</span></div>
+<div class="counter"><div class="square"></div><span id="normalCount">0</span></div>
+</div>
 </div>
 
-<div id="list"></div>
+<div class="panel" id="list"></div>
 
 <div class="form">
 <input id="vehicule" placeholder="Véhicule">
 <input id="alerte" placeholder="Alerte">
 <select id="priorite">
-<option> Urgent</option>
-<option> Important</option>
-<option> Normal</option>
+<option>🔴 Urgent</option>
+<option>🟠 Important</option>
+<option>🟢 Normal</option>
 </select>
-<button onclick="add()">Ajouter</button>
+<button onclick="addAlert()">Ajouter</button>
 </div>
 
-<div class="small">Les alertes sont enregistrées dans Notion.</div>
+<div class="footer">Les alertes sont enregistrées dans Notion.</div>
 
 </div>
 
 <script>
-const list=document.getElementById("list")
-const count=document.getElementById("count")
 
-function color(priority){
-if(priority.includes("Urgent"))return"red"
-if(priority.includes("Important"))return"orange"
-return"green"
+function formatDate(d){
+const date=new Date(d)
+const day=String(date.getDate()).padStart(2,"0")
+const month=String(date.getMonth()+1).padStart(2,"0")
+const year=date.getFullYear()
+return `${day}-${month}-${year}`
+}
+
+function badge(p){
+if(p.includes("Urgent")) return "badge urgent"
+if(p.includes("Important")) return "badge important"
+return "badge normal"
 }
 
 async function load(){
+
 const res=await fetch("/api/alertes")
 const data=await res.json()
 
-count.textContent=data.length+(data.length>1?" actives":" active")
+let u=0,i=0,n=0
+
+data.forEach(a=>{
+if(a.priorite.includes("Urgent"))u++
+else if(a.priorite.includes("Important"))i++
+else n++
+})
+
+urgentCount.textContent=u
+importantCount.textContent=i
+normalCount.textContent=n
 
 list.innerHTML=data.map(a=>`
-<div class="card">
-<div class="left">
-<div class="dot ${color(a.priorite)}"></div>
+<div class="row">
 <div>
-<div class="title">${a.vehicule} — ${a.alerte}</div>
-<div class="sub">${a.priorite} • ${a.date}</div>
-</div>
+<span class="${badge(a.priorite)}">${a.priorite.replace(/^.. /,'')}</span>
+<b>${a.vehicule} — ${a.alerte}</b><br>
+${a.priorite.replace(/^.. /,'')} • ${formatDate(a.date)}
 </div>
 <button onclick="resolveAlert('${a.id}')">Réglé</button>
 </div>
 `).join("")
+
 }
 
 async function resolveAlert(id){
+
 await fetch("/api/resolve",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({id})
 })
+
 load()
+
 }
 
-async function add(){
-const vehicule=document.getElementById("vehicule").value.trim()
-const alerte=document.getElementById("alerte").value.trim()
-const priorite=document.getElementById("priorite").value
+async function addAlert(){
 
-if(!vehicule||!alerte)return
+const vehicule=document.getElementById("vehicule").value
+const alerte=document.getElementById("alerte").value
+const priorite=document.getElementById("priorite").value
 
 await fetch("/api/add",{
 method:"POST",
@@ -190,10 +133,12 @@ document.getElementById("vehicule").value=""
 document.getElementById("alerte").value=""
 
 load()
+
 }
 
 load()
 setInterval(load,30000)
+
 </script>
 
 </body>

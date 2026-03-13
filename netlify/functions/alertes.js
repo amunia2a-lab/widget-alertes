@@ -17,36 +17,37 @@ export default async (req, context) => {
 
     const data = await response.json();
 
-    const results = (data.results || []).map((page) => {
+    const debug = (data.results || []).map((page) => {
       const props = page.properties || {};
+      const propertyNames = Object.keys(props);
 
-      const alerte =
-        props["Alerte"]?.title?.[0]?.plain_text ||
-        props["Alerte"]?.rich_text?.[0]?.plain_text ||
-        "";
+      const extracted = {};
+      for (const [key, value] of Object.entries(props)) {
+        extracted[key] = {
+          type: value.type,
+          title: value.title?.[0]?.plain_text || "",
+          rich_text: value.rich_text?.[0]?.plain_text || "",
+          select: value.select?.name || "",
+          date: value.date?.start || ""
+        };
+      }
 
-      const vehicule =
-        props["Véhicule"]?.rich_text?.[0]?.plain_text ||
-        props["Véhicule"]?.title?.[0]?.plain_text ||
-        "";
-
-      const priorite = props["Priorité"]?.select?.name || "";
-      const statut = props["Statut"]?.select?.name || "";
-      const date = props["Date"]?.date?.start || "";
-
-      return { alerte, vehicule, priorite, statut, date };
+      return {
+        id: page.id,
+        propertyNames,
+        extracted
+      };
     });
 
-    const filtered = results.filter(
-      item => item.statut !== "Réglé" && (item.alerte || item.vehicule)
-    );
-
-    return new Response(JSON.stringify(filtered), {
+    return new Response(JSON.stringify({
+      count: (data.results || []).length,
+      debug
+    }, null, 2), {
       headers: { "Content-Type": "application/json" },
       status: 200
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: "Erreur Netlify Function", details: String(error) }), {
+    return new Response(JSON.stringify({ error: "Erreur Netlify Function", details: String(error) }, null, 2), {
       headers: { "Content-Type": "application/json" },
       status: 500
     });

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -19,7 +20,7 @@ body{
 }
 
 .widget{
-  width:560px;
+  width:680px;
   max-width:100%;
   padding:18px;
   border-radius:20px;
@@ -67,27 +68,28 @@ body{
 button{
   border:1px solid rgba(0,0,0,0.1);
   background:white;
-  padding:6px 10px;
+  padding:6px 12px;
   border-radius:8px;
   cursor:pointer;
 }
 
 .form{
   display:flex;
-  gap:8px;
+  gap:10px;
   margin-top:12px;
 }
 
 .form input{
   flex:1;
+  min-width:0;
 }
 
 .form select{
-  width:130px;
+  width:150px;
 }
 
 .form button{
-  width:80px;
+  width:100px;
 }
 
 input,select{
@@ -103,7 +105,6 @@ input,select{
   color:#777;
   margin-top:8px;
   text-align:center;
-  width:100%;
 }
 </style>
 </head>
@@ -135,23 +136,22 @@ input,select{
 </div>
 
 <script>
-const list = document.getElementById("list")
-const count = document.getElementById("count")
+const list=document.getElementById("list")
+const count=document.getElementById("count")
 
 function color(priority){
-if(priority.includes("Urgent")) return "red"
-if(priority.includes("Important")) return "orange"
-return "green"
+if(priority.includes("Urgent"))return"red"
+if(priority.includes("Important"))return"orange"
+return"green"
 }
 
 async function load(){
+const res=await fetch("/.netlify/functions/alertes")
+const data=await res.json()
 
-const res = await fetch("/.netlify/functions/alertes")
-const data = await res.json()
+count.textContent=data.length+(data.length>1?" actives":" active")
 
-count.textContent = data.length + (data.length>1?" actives":" active")
-
-list.innerHTML = data.map(a=>`
+list.innerHTML=data.map(a=>`
 <div class="card">
 <div class="left">
 <div class="dot ${color(a.priorite)}"></div>

@@ -1,8 +1,6 @@
 
 export default async (req, context) => {
-
 const NOTION_API_KEY = process.env.NOTION_API_KEY
-
 const body = JSON.parse(req.body)
 
 await fetch(`https://api.notion.com/v1/pages/${body.id}`,{
@@ -20,5 +18,4 @@ Statut:{select:{name:"Réglé"}}
 })
 
 return new Response(JSON.stringify({ok:true}),{status:200})
-
 }

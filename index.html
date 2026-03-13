@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -146,7 +145,7 @@ return"green"
 }
 
 async function load(){
-const res=await fetch("/.netlify/functions/alertes")
+const res=await fetch("/api/alertes")
 const data=await res.json()
 
 count.textContent=data.length+(data.length>1?" actives":" active")
@@ -160,13 +159,17 @@ list.innerHTML=data.map(a=>`
 <div class="sub">${a.priorite} • ${a.date}</div>
 </div>
 </div>
-<button onclick="resolve('${a.id}')">Réglé</button>
+<button onclick="resolveAlert('${a.id}')">Réglé</button>
 </div>
 `).join("")
 }
 
-async function resolve(id){
-await fetch("/.netlify/functions/resolve",{method:"POST",body:JSON.stringify({id})})
+async function resolveAlert(id){
+await fetch("/api/resolve",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({id})
+})
 load()
 }
 
@@ -177,7 +180,11 @@ const priorite=document.getElementById("priorite").value
 
 if(!vehicule||!alerte)return
 
-await fetch("/.netlify/functions/add",{method:"POST",body:JSON.stringify({vehicule,alerte,priorite})})
+await fetch("/api/add",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({vehicule,alerte,priorite})
+})
 
 document.getElementById("vehicule").value=""
 document.getElementById("alerte").value=""

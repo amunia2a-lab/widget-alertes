@@ -1,141 +1,156 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Widget Alertes Atelier</title>
-  <style>
-    :root {
-      --text: #1f1f1f;
-      --muted: #6b6b6b;
-      --border: rgba(0,0,0,0.08);
-      --card: rgba(255,255,255,0.78);
-      --danger: #d92d20;
-      --warn: #f79009;
-      --ok: #12b76a;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      background: transparent;
-      color: var(--text);
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
-    }
-    .widget {
-      width: 420px;
-      padding: 18px;
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      background: var(--card);
-      backdrop-filter: blur(10px);
-    }
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 14px;
-    }
-    .title {
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-    .count {
-      font-size: 13px;
-      color: var(--muted);
-      white-space: nowrap;
-    }
-    .list {
-      display: grid;
-      gap: 10px;
-    }
-    .item {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      align-items: center;
-      gap: 10px;
-      padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      background: rgba(255,255,255,0.65);
-    }
-    .badge {
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-    }
-    .urgent { background: #d92d20; }
-    .important { background: #f79009; }
-    .normal { background: #12b76a; }
-    .line1 {
-      font-size: 15px;
-      font-weight: 600;
-    }
-    .line2 {
-      margin-top: 3px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .empty {
-      padding: 16px;
-      text-align: center;
-      color: var(--muted);
-      border: 1px dashed var(--border);
-      border-radius: 16px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alertes Atelier</title>
+
+<style>
+body{
+font-family: Inter, system-ui, -apple-system, sans-serif;
+background: transparent;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+margin:0;
+}
+
+.widget{
+width:420px;
+padding:18px;
+border-radius:20px;
+border:1px solid rgba(0,0,0,0.08);
+background:white;
+}
+
+.header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+font-weight:600;
+margin-bottom:14px;
+}
+
+.card{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:12px;
+border:1px solid rgba(0,0,0,0.08);
+border-radius:14px;
+margin-bottom:10px;
+}
+
+.left{
+display:flex;
+gap:10px;
+align-items:center;
+}
+
+.dot{
+width:10px;
+height:10px;
+border-radius:50%;
+}
+
+.red{background:#e5484d;}
+.orange{background:#f5a524;}
+.green{background:#30a46c;}
+
+.title{
+font-weight:600;
+}
+
+.sub{
+font-size:12px;
+color:#666;
+}
+
+.empty{
+font-size:13px;
+color:#777;
+padding:10px;
+}
+</style>
 </head>
+
 <body>
-  <section class="widget">
-    <div class="header">
-      <div class="title">⚠️ Alertes atelier</div>
-      <div class="count" id="count">0 active</div>
-    </div>
-    <div class="list" id="list"></div>
-  </section>
 
-  <script>
-    const listEl = document.getElementById('list');
-    const countEl = document.getElementById('count');
+<div class="widget">
 
-    function priorityClass(priority) {
-      if (priority === '🔴 Urgent') return 'urgent';
-      if (priority === '🟠 Important') return 'important';
-      return 'normal';
-    }
+<div class="header">
+<div>⚠️ Alertes atelier</div>
+<div id="count">0</div>
+</div>
 
-    async function loadAlerts() {
-      try {
-        const res = await fetch('/.netlify/functions/alertes');
-        const alerts = await res.json();
+<div id="list"></div>
 
-        countEl.textContent = `${alerts.length} active${alerts.length > 1 ? 's' : ''}`;
+</div>
 
-        if (!alerts.length) {
-          listEl.innerHTML = '<div class="empty">Aucune alerte en cours</div>';
-          return;
-        }
+<script>
 
-        listEl.innerHTML = alerts.map(item => `
-          <div class="item">
-            <div class="badge ${priorityClass(item.priorite)}"></div>
-            <div>
-              <div class="line1">${item.vehicule} — ${item.alerte}</div>
-              <div class="line2">${item.priorite || ''}${item.date ? ' • ' + item.date : ''}</div>
-            </div>
-          </div>
-        `).join('');
-      } catch (e) {
-        listEl.innerHTML = '<div class="empty">Impossible de charger les alertes</div>';
-      }
-    }
+const list = document.getElementById("list")
+const count = document.getElementById("count")
 
-    loadAlerts();
-    setInterval(loadAlerts, 30000);
-  </script>
+function color(priority){
+
+if(priority.includes("Urgent")) return "red"
+if(priority.includes("Important")) return "orange"
+return "green"
+
+}
+
+async function load(){
+
+try{
+
+const res = await fetch("/.netlify/functions/alertes")
+const data = await res.json()
+
+count.textContent = data.length + " actives"
+
+if(!data.length){
+
+list.innerHTML = "<div class='empty'>Aucune alerte en cours</div>"
+return
+
+}
+
+list.innerHTML = data.map(a=>{
+
+return `
+<div class="card">
+
+<div class="left">
+
+<div class="dot ${color(a.priorite)}"></div>
+
+<div>
+<div class="title">${a.vehicule} — ${a.alerte}</div>
+<div class="sub">${a.priorite} • ${a.date}</div>
+</div>
+
+</div>
+
+</div>
+`
+
+}).join("")
+
+}catch(e){
+
+list.innerHTML = "<div class='empty'>Erreur chargement</div>"
+
+}
+
+}
+
+load()
+setInterval(load,30000)
+
+</script>
+
 </body>
 </html>

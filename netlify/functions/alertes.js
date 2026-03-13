@@ -20,8 +20,16 @@ export default async (req, context) => {
     const results = (data.results || []).map((page) => {
       const props = page.properties || {};
 
-      const alerte = props.Alerte?.title?.[0]?.plain_text || "";
-      const vehicule = props["Véhicule"]?.rich_text?.[0]?.plain_text || "";
+      const alerte =
+        props["Alerte"]?.title?.[0]?.plain_text ||
+        props["Alerte"]?.rich_text?.[0]?.plain_text ||
+        "";
+
+      const vehicule =
+        props["Véhicule"]?.rich_text?.[0]?.plain_text ||
+        props["Véhicule"]?.title?.[0]?.plain_text ||
+        "";
+
       const priorite = props["Priorité"]?.select?.name || "";
       const statut = props["Statut"]?.select?.name || "";
       const date = props["Date"]?.date?.start || "";
@@ -29,7 +37,9 @@ export default async (req, context) => {
       return { alerte, vehicule, priorite, statut, date };
     });
 
-    const filtered = results.filter(item => item.statut !== "Réglé");
+    const filtered = results.filter(
+      item => item.statut !== "Réglé" && (item.alerte || item.vehicule)
+    );
 
     return new Response(JSON.stringify(filtered), {
       headers: { "Content-Type": "application/json" },

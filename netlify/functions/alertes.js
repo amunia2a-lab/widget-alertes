@@ -1,8 +1,10 @@
+
 export default async (req, context) => {
+
 const NOTION_API_KEY = process.env.NOTION_API_KEY
 const DATABASE_ID = process.env.NOTION_DATABASE_ID
 
-try {
+try{
 
 const response = await fetch(`https://api.notion.com/v1/databases/${DATABASE_ID}/query`,{
 method:"POST",

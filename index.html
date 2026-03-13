@@ -20,7 +20,6 @@ body{
 
 .widget{
   width:420px;
-  max-width:100%;
   padding:18px;
   border-radius:20px;
   border:1px solid rgba(0,0,0,0.08);
@@ -30,8 +29,6 @@ body{
 .header{
   display:flex;
   justify-content:space-between;
-  align-items:center;
-  gap:12px;
   margin-bottom:14px;
   font-weight:600;
 }
@@ -40,7 +37,7 @@ body{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  gap:12px;
+  gap:10px;
   padding:12px;
   border:1px solid rgba(0,0,0,0.08);
   border-radius:14px;
@@ -51,31 +48,20 @@ body{
   display:flex;
   gap:10px;
   align-items:center;
-  min-width:0;
 }
 
 .dot{
   width:10px;
   height:10px;
   border-radius:50%;
-  flex:0 0 auto;
 }
 
 .red{background:#e5484d;}
 .orange{background:#f5a524;}
 .green{background:#30a46c;}
 
-.title{
-  font-weight:600;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-
-.sub{
-  font-size:12px;
-  color:#666;
-}
+.title{font-weight:600;}
+.sub{font-size:12px;color:#666;}
 
 button{
   border:1px solid rgba(0,0,0,0.1);
@@ -83,29 +69,34 @@ button{
   padding:6px 10px;
   border-radius:8px;
   cursor:pointer;
-  flex:0 0 auto;
 }
 
 .form{
-  display:grid;
-  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
-  gap:8px;
+  display:flex;
+  gap:6px;
   margin-top:12px;
+  flex-wrap:nowrap;
 }
 
-.form-bottom{
-  display:grid;
-  grid-template-columns: minmax(0,1fr) auto;
-  gap:8px;
+.form input{
+  flex:1;
+  min-width:0;
+}
+
+.form select{
+  width:100px;
+}
+
+.form button{
+  width:70px;
 }
 
 input,select{
-  width:100%;
-  min-width:0;
-  padding:8px 10px;
+  padding:7px 8px;
   border-radius:8px;
   border:1px solid rgba(0,0,0,0.1);
   background:white;
+  font-size:13px;
 }
 
 .small{
@@ -119,15 +110,6 @@ input,select{
   color:#777;
   padding:10px 2px;
 }
-
-@media (max-width: 430px){
-  .widget{
-    width:100%;
-  }
-  .card{
-    align-items:flex-start;
-  }
-}
 </style>
 </head>
 
@@ -135,27 +117,25 @@ input,select{
 
 <div class="widget">
 
-  <div class="header">
-    <div>⚠️ Alertes atelier</div>
-    <div id="count">0</div>
-  </div>
+<div class="header">
+<div>⚠️ Alertes atelier</div>
+<div id="count">0</div>
+</div>
 
-  <div id="list"></div>
+<div id="list"></div>
 
-  <div class="form">
-    <input id="vehicule" placeholder="Véhicule">
-    <input id="alerte" placeholder="Alerte">
-    <div class="form-bottom">
-      <select id="priorite">
-        <option>🔴 Urgent</option>
-        <option>🟠 Important</option>
-        <option>🟢 Normal</option>
-      </select>
-      <button onclick="add()">Ajouter</button>
-    </div>
-  </div>
+<div class="form">
+<input id="vehicule" placeholder="Véhicule">
+<input id="alerte" placeholder="Alerte">
+<select id="priorite">
+<option>🔴</option>
+<option>🟠</option>
+<option>🟢</option>
+</select>
+<button onclick="add()">+</button>
+</div>
 
-  <div class="small">Les alertes sont enregistrées dans Notion.</div>
+<div class="small">Les alertes sont enregistrées dans Notion.</div>
 
 </div>
 
@@ -164,61 +144,60 @@ const list = document.getElementById("list")
 const count = document.getElementById("count")
 
 function color(priority){
-  if(priority.includes("Urgent")) return "red"
-  if(priority.includes("Important")) return "orange"
-  return "green"
+if(priority.includes("🔴")) return "red"
+if(priority.includes("🟠")) return "orange"
+return "green"
 }
 
 async function load(){
-  const res = await fetch("/.netlify/functions/alertes")
-  const data = await res.json()
+const res = await fetch("/.netlify/functions/alertes")
+const data = await res.json()
 
-  count.textContent = data.length + (data.length > 1 ? " actives" : " active")
+count.textContent = data.length + (data.length > 1 ? " actives" : " active")
 
-  if(!data.length){
-    list.innerHTML = "<div class='empty'>Aucune alerte en cours</div>"
-    return
-  }
+if(!data.length){
+list.innerHTML = "<div class='empty'>Aucune alerte</div>"
+return
+}
 
-  list.innerHTML = data.map(a => `
-    <div class="card">
-      <div class="left">
-        <div class="dot ${color(a.priorite)}"></div>
-        <div>
-          <div class="title">${a.vehicule} — ${a.alerte}</div>
-          <div class="sub">${a.priorite} • ${a.date}</div>
-        </div>
-      </div>
-      <button onclick="resolve('${a.id}')">Réglé</button>
-    </div>
-  `).join("")
+list.innerHTML = data.map(a=>`
+<div class="card">
+<div class="left">
+<div class="dot ${color(a.priorite)}"></div>
+<div>
+<div class="title">${a.vehicule} — ${a.alerte}</div>
+<div class="sub">${a.priorite} • ${a.date}</div>
+</div>
+</div>
+<button onclick="resolve('${a.id}')">Réglé</button>
+</div>
+`).join("")
 }
 
 async function resolve(id){
-  await fetch("/.netlify/functions/resolve",{
-    method:"POST",
-    body:JSON.stringify({id})
-  })
-  load()
+await fetch("/.netlify/functions/resolve",{
+method:"POST",
+body:JSON.stringify({id})
+})
+load()
 }
 
 async function add(){
-  const vehicule = document.getElementById("vehicule").value.trim()
-  const alerte = document.getElementById("alerte").value.trim()
-  const priorite = document.getElementById("priorite").value
+const vehicule=document.getElementById("vehicule").value.trim()
+const alerte=document.getElementById("alerte").value.trim()
+const priorite=document.getElementById("priorite").value
 
-  if(!vehicule || !alerte) return
+if(!vehicule||!alerte) return
 
-  await fetch("/.netlify/functions/add",{
-    method:"POST",
-    body:JSON.stringify({vehicule,alerte,priorite})
-  })
+await fetch("/.netlify/functions/add",{
+method:"POST",
+body:JSON.stringify({vehicule,alerte,priorite})
+})
 
-  document.getElementById("vehicule").value = ""
-  document.getElementById("alerte").value = ""
-  document.getElementById("priorite").value = "🔴 Urgent"
+document.getElementById("vehicule").value=""
+document.getElementById("alerte").value=""
 
-  load()
+load()
 }
 
 load()
